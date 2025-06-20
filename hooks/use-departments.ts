@@ -1,180 +1,133 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
-
-interface Department {
-  id: number;
-  nom: string;
-  acronyme?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { useState, useEffect, useMemo } from "react"
+import type { Department } from "@/types/department"
 
 export function useDepartments() {
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
 
-  const fetchDepartments = useCallback(async () => {
+  const fetchDepartments = async () => {
     try {
-      setIsLoading(true);
-      const response = await fetch("/api/departments");
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (searchTerm) params.append("search", searchTerm)
+      if (statusFilter !== "all") params.append("status", statusFilter.toUpperCase())
+
+      const response = await fetch(`/api/departments?${params.toString()}`)
       if (!response.ok) {
-        throw new Error("Erreur lors du chargement des départements");
+        throw new Error("Erreur lors de la récupération des départements")
       }
-      const data = await response.json();
-      setDepartments(data);
-      return data;
+
+      const data = await response.json()
+      setDepartments(data)
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description:
-          error instanceof Error ? error.message : "Une erreur est survenue",
-        variant: "destructive",
-      });
-      return [];
+      console.error("Erreur:", error)
+      setDepartments([])
     } finally {
-      setIsLoading(false);
+      setLoading(false)
     }
-  }, [toast]);
-
-  const createDepartment = useCallback(
-    async (nom: string, acronyme?: string) => {
-      try {
-        const response = await fetch("/api/departments", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nom: nom.trim(),
-            acronyme: acronyme?.trim() || null,
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Une erreur est survenue");
-        }
-
-        const newDepartment = await response.json();
-
-        // Mise à jour optimiste de l'état local
-        setDepartments((prev) => [newDepartment, ...prev]);
-
-        toast({
-          title: "Succès",
-          description: "Département créé avec succès",
-        });
-
-        return newDepartment;
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description:
-            error instanceof Error ? error.message : "Une erreur est survenue",
-          variant: "destructive",
-        });
-        throw error;
-      }
-    },
-    [toast]
-  );
-
-  const updateDepartment = useCallback(
-    async (id: number, nom: string, acronyme?: string) => {
-      try {
-        const response = await fetch(`/api/departments/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nom: nom.trim(),
-            acronyme: acronyme?.trim() || null,
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Une erreur est survenue");
-        }
-
-        const updatedDepartment = await response.json();
-
-        // Mise à jour optimiste de l'état local
-        setDepartments((prev) =>
-          prev.map((dept) => (dept.id === id ? updatedDepartment : dept))
-        );
-
-        toast({
-          title: "Succès",
-          description: "Département modifié avec succès",
-        });
-
-        return updatedDepartment;
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description:
-            error instanceof Error ? error.message : "Une erreur est survenue",
-          variant: "destructive",
-        });
-        throw error;
-      }
-    },
-    [toast]
-  );
-
-  const deleteDepartment = useCallback(
-    async (id: number) => {
-      try {
-        const response = await fetch(`/api/departments/${id}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Une erreur est survenue");
-        }
-
-        // Mise à jour optimiste de l'état local
-        setDepartments((prev) => prev.filter((dept) => dept.id !== id));
-
-        toast({
-          title: "Succès",
-          description: "Département supprimé avec succès",
-        });
-
-        return true;
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description:
-            error instanceof Error ? error.message : "Une erreur est survenue",
-          variant: "destructive",
-        });
-        throw error;
-      }
-    },
-    [toast]
-  );
-
-  const refreshDepartments = useCallback(() => {
-    return fetchDepartments();
-  }, [fetchDepartments]);
+  }
 
   useEffect(() => {
-    fetchDepartments();
-  }, [fetchDepartments]);
+    fetchDepartments()
+  }, [searchTerm, statusFilter])
+
+  const filteredDepartments = useMemo(() => departments, [departments])
+
+  const addDepartment = async (name: string, shortName: string) => {
+    try {
+      const response = await fetch("/api/departments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, shortName }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Erreur lors de la création du département")
+      }
+
+      await fetchDepartments()
+    } catch (error) {
+      console.error("Erreur lors de l'ajout:", error)
+      throw error
+    }
+  }
+
+  const updateDepartment = async (id: string, name: string, shortName: string) => {
+    try {
+      const response = await fetch(`/api/departments/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, shortName }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Erreur lors de la mise à jour du département")
+      }
+
+      await fetchDepartments()
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour:", error)
+      throw error
+    }
+  }
+
+  const deleteDepartment = async (id: string) => {
+    try {
+      const response = await fetch(`/api/departments/${id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Erreur lors de la suppression du département")
+      }
+
+      await fetchDepartments()
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error)
+      throw error
+    }
+  }
+
+  const restoreDepartment = async (id: string) => {
+    try {
+      const response = await fetch(`/api/departments/${id}/restore`, {
+        method: "POST",
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Erreur lors de la restauration du département")
+      }
+
+      await fetchDepartments()
+    } catch (error) {
+      console.error("Erreur lors de la restauration:", error)
+      throw error
+    }
+  }
 
   return {
-    departments,
-    isLoading,
-    createDepartment,
+    departments: filteredDepartments,
+    loading,
+    searchTerm,
+    setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    addDepartment,
     updateDepartment,
     deleteDepartment,
-    refreshDepartments,
-  };
+    restoreDepartment,
+    refetch: fetchDepartments,
+  }
 }

@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,12 +11,18 @@ datasource db {
 }
 
 model Department {
-  id        Int       @id @default(autoincrement())
-  nom       String
-  acronyme  String?   // Nouveau champ facultatif
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id        String   @id @default(cuid())
+  name      String
+  shortName String   @map("short_name")
+  status    DepartmentStatus @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("Department")
+  @@map("departments")
+}
+
+enum DepartmentStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
 }
