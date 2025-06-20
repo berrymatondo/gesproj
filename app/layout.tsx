@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Gestion des Départements - ONE OFFICE",
+  title: "Gestion des Départements",
   description: "Application de gestion des départements avec CRUD complet",
   generator: "v0.dev",
 };

@@ -1,15 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Menu, MessageSquare, Home, Bell, Grid3X3, Download, PrinterIcon as Print } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Menu,
+  MessageSquare,
+  Home,
+  Bell,
+  Grid3X3,
+  Download,
+  PrinterIcon as Print,
+} from "lucide-react";
 
 interface MobileHeaderProps {
-  onExportExcel: () => void
+  onExportExcel: () => void;
 }
 
 export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 md:px-6 md:py-4">
@@ -17,9 +25,11 @@ export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">ONE</span>
+            <span className="text-white font-bold text-sm">DSI</span>
           </div>
-          <span className="text-xl font-semibold text-blue-600">OFFICE</span>
+          <span className="text-xl font-semibold text-blue-600">
+            SUIVI DE PROJETS
+          </span>
         </div>
 
         {/* Desktop Navigation */}
@@ -49,7 +59,11 @@ export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
             <Menu className="h-5 w-5" />
           </Button>
         </div>
@@ -59,19 +73,35 @@ export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
       {isMenuOpen && (
         <div className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4">
           <div className="flex flex-col space-y-2">
-            <Button variant="ghost" className="justify-start" onClick={() => setIsMenuOpen(false)}>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => setIsMenuOpen(false)}
+            >
               <MessageSquare className="h-5 w-5 mr-3" />
               Messages
             </Button>
-            <Button variant="ghost" className="justify-start" onClick={() => setIsMenuOpen(false)}>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => setIsMenuOpen(false)}
+            >
               <Bell className="h-5 w-5 mr-3" />
               Notifications
             </Button>
-            <Button variant="ghost" className="justify-start" onClick={() => setIsMenuOpen(false)}>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => setIsMenuOpen(false)}
+            >
               <Grid3X3 className="h-5 w-5 mr-3" />
               Applications
             </Button>
-            <Button variant="ghost" className="justify-start" onClick={() => setIsMenuOpen(false)}>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => setIsMenuOpen(false)}
+            >
               <Home className="h-5 w-5 mr-3" />
               Accueil
             </Button>
@@ -80,14 +110,18 @@ export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
               variant="ghost"
               className="justify-start"
               onClick={() => {
-                onExportExcel()
-                setIsMenuOpen(false)
+                onExportExcel();
+                setIsMenuOpen(false);
               }}
             >
               <Download className="h-5 w-5 mr-3" />
               Exporter Excel
             </Button>
-            <Button variant="ghost" className="justify-start" onClick={() => setIsMenuOpen(false)}>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => setIsMenuOpen(false)}
+            >
               <Print className="h-5 w-5 mr-3" />
               Imprimer
             </Button>
@@ -95,5 +129,5 @@ export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
         </div>
       )}
     </header>
-  )
+  );
 }
