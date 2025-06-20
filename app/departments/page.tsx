@@ -190,7 +190,7 @@ export default function DepartmentsPage() {
             <div className="text-center py-12">
               <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
               <p className="text-muted-foreground">
-                Chargement des départements...
+                Chargement des départements ...
               </p>
             </div>
           ) : (
