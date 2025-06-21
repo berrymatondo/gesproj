@@ -1,5 +1,7 @@
-import { DepartmentsPage } from "@/components/departments-page"
+import { DashboardPage } from "@/components/dashboard-page";
 
-export default function Home() {
-  return <DepartmentsPage />
-}
+const HomePAge = () => {
+  return <DashboardPage />;
+};
+
+export default HomePAge;

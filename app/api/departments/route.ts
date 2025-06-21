@@ -5,6 +5,7 @@ import { z } from "zod"
 const createDepartmentSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   shortName: z.string().min(1, "Le nom court est requis"),
+  status: z.enum(["ACTIVE", "INACTIVE", "DELETED"]).optional().default("ACTIVE"),
 })
 
 const querySchema = z.object({
@@ -59,13 +60,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, shortName } = createDepartmentSchema.parse(body)
+    const { name, shortName, status } = createDepartmentSchema.parse(body)
 
     const department = await prisma.department.create({
       data: {
         name,
         shortName,
-        status: "ACTIVE",
+        status: status || "ACTIVE",
       },
     })
 

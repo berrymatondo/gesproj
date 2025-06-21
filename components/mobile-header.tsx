@@ -11,6 +11,7 @@ import {
   Download,
   PrinterIcon as Print,
 } from "lucide-react";
+import { Navigation } from "./navigation";
 
 interface MobileHeaderProps {
   onExportExcel: () => void;
@@ -25,35 +26,33 @@ export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">DSI</span>
+            <span className="text-white font-bold text-sm">ONE</span>
           </div>
-          <span className="text-xl font-semibold text-blue-600">
-            SUIVI DE PROJETS
-          </span>
+          <span className="text-xl font-semibold text-blue-600">OFFICE</span>
         </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-4">
-          <Button variant="ghost" size="icon">
-            <MessageSquare className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Grid3X3 className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Home className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onExportExcel}>
-            <Download className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Print className="h-4 w-4" />
-          </Button>
-          <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">RT</span>
+          <Navigation />
+          <div className="flex items-center space-x-2 ml-4">
+            <Button variant="ghost" size="icon">
+              <MessageSquare className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Bell className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Grid3X3 className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={onExportExcel}>
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Print className="h-4 w-4" />
+            </Button>
+            <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">RT</span>
+            </div>
           </div>
         </div>
 

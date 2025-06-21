@@ -21,8 +21,110 @@ model Department {
   @@map("departments")
 }
 
+model Person {
+  id        String   @id @default(cuid())
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  email     String   @unique
+  phone     String?
+  status    PersonStatus @default(ACTIVE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations avec les projets
+  projectsAsOwner     ProjectPersonOwner[]
+  projectsAsReference ProjectPersonReference[]
+  projectsAsAnalyst   ProjectPersonAnalyst[]
+
+  @@map("persons")
+}
+
+// Modifier le modèle Project pour supporter plusieurs porteurs
+model Project {
+  id          String   @id @default(cuid())
+  name        String   @map("name")
+  description String?
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  priority    Int      @default(1) // 1 à 5 étoiles
+  testLink    String?  @map("test_link")
+  status      ProjectStatus @default(NEW)
+  deleted     Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations - remplacer owner par une relation many-to-many
+  owners           ProjectPersonOwner[]
+  referencePersons ProjectPersonReference[]
+  analysts         ProjectPersonAnalyst[]
+  comments         ProjectComment[]
+
+  @@map("projects")
+}
+
+// Ajouter la nouvelle table pour les porteurs de projet
+model ProjectPersonOwner {
+  id        String @id @default(cuid())
+  projectId String @map("project_id")
+  personId  String @map("person_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  person  Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, personId])
+  @@map("project_person_owners")
+}
+
+model ProjectPersonReference {
+  id        String @id @default(cuid())
+  projectId String @map("project_id")
+  personId  String @map("person_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  person  Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, personId])
+  @@map("project_person_references")
+}
+
+model ProjectPersonAnalyst {
+  id        String @id @default(cuid())
+  projectId String @map("project_id")
+  personId  String @map("person_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  person  Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, personId])
+  @@map("project_person_analysts")
+}
+
+model ProjectComment {
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  content   String
+  author    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_comments")
+}
+
 enum DepartmentStatus {
   ACTIVE
   INACTIVE
   DELETED
+}
+
+enum PersonStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+enum ProjectStatus {
+  NEW
+  IN_PROGRESS
+  DELIVERED
 }
