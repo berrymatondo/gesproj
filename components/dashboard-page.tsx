@@ -25,6 +25,8 @@ import {
   User,
   Mail,
   Phone,
+  MessageSquare,
+  Clock,
 } from "lucide-react";
 import { MobileHeader } from "./mobile-header";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -58,6 +60,15 @@ interface ProjectSummary {
   owners: Person[];
 }
 
+interface RecentComment {
+  id: string;
+  content: string;
+  author: string;
+  createdAt: string;
+  projectName: string;
+  projectId: string;
+}
+
 export function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     totalPersons: 0,
@@ -77,6 +88,7 @@ export function DashboardPage() {
     projectsEndingSoon: 0,
   });
   const [recentProjects, setRecentProjects] = useState<ProjectSummary[]>([]);
+  const [recentComments, setRecentComments] = useState<RecentComment[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [personDialogOpen, setPersonDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -169,6 +181,33 @@ export function DashboardPage() {
           }));
 
         setRecentProjects(recent);
+
+        // Récupérer les 10 derniers commentaires de tous les projets
+        const allComments: RecentComment[] = [];
+        projects.forEach((project: any) => {
+          if (project.comments && project.comments.length > 0) {
+            project.comments.forEach((comment: any) => {
+              allComments.push({
+                id: comment.id,
+                content: comment.content,
+                author: comment.author,
+                createdAt: comment.createdAt,
+                projectName: project.name,
+                projectId: project.id,
+              });
+            });
+          }
+        });
+
+        // Trier par date de création (plus récent en premier) et prendre les 10 premiers
+        const sortedComments = allComments
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .slice(0, 10);
+
+        setRecentComments(sortedComments);
       } catch (error) {
         console.error("Erreur lors du chargement des statistiques:", error);
       } finally {
@@ -235,6 +274,33 @@ export function DashboardPage() {
           </Badge>
         );
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
+    if (diffInHours < 1) {
+      return "Il y a moins d'une heure";
+    } else if (diffInHours < 24) {
+      return `Il y a ${diffInHours}h`;
+    } else if (diffInHours < 48) {
+      return "Hier";
+    } else {
+      return date.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "short",
+        year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+      });
+    }
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
   };
 
   return (
@@ -660,76 +726,63 @@ export function DashboardPage() {
             </Tabs>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar - Remplacer "Étapes de gestion" par "Derniers commentaires" */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Étapes de gestion</CardTitle>
-                  <Badge variant="secondary">Notes (3)</Badge>
+                  <CardTitle className="text-lg flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5" />
+                    <span>Derniers commentaires</span>
+                  </CardTitle>
+                  <Badge variant="secondary">({recentComments.length})</Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        Début de l'organisation
-                      </p>
-                      <p className="text-xs text-gray-500">01/04/2024</p>
-                    </div>
+              <CardContent className="space-y-4 max-h-96 overflow-y-auto">
+                {loading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    ))}
                   </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 border-2 border-blue-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Gestion en cours</p>
-                      <p className="text-xs text-gray-500">01/04/2024</p>
-                    </div>
+                ) : recentComments.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentComments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="border-l-2 border-blue-200 pl-3 py-2"
+                      >
+                        <div className="flex items-start justify-between mb-1">
+                          <p className="text-sm font-medium text-gray-900">
+                            {comment.author}
+                          </p>
+                          <div className="flex items-center text-xs text-gray-500">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {formatDate(comment.createdAt)}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {truncateText(comment.content, 80)}
+                        </p>
+                        <Link href={`/projects`}>
+                          <p className="text-xs text-blue-600 hover:underline">
+                            📁 {truncateText(comment.projectName, 25)}
+                          </p>
+                        </Link>
+                      </div>
+                    ))}
                   </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        Document de synthèse encodé
-                      </p>
-                      <p className="text-xs text-gray-500">---</p>
-                    </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500">
+                      Aucun commentaire récent
+                    </p>
                   </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        Réception du plan d'action
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Date limite d'envoi
-                      </p>
-                      <p className="text-xs text-gray-500">01/01/2026</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        Traitement par l'ONE
-                      </p>
-                      <p className="text-xs text-gray-500">---</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Clôture du bilan</p>
-                      <p className="text-xs text-gray-500">---</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>

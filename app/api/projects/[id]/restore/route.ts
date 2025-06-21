@@ -42,6 +42,11 @@ export async function POST(
             person: true,
           },
         },
+        developers: {
+          include: {
+            person: true,
+          },
+        },
         comments: {
           orderBy: {
             createdAt: "desc",
@@ -85,6 +90,14 @@ export async function POST(
         email: analyst.person.email,
         phone: analyst.person.phone,
         status: analyst.person.status.toLowerCase(),
+      })),
+      developers: project.developers.map((developer) => ({
+        id: developer.person.id,
+        firstName: developer.person.firstName,
+        lastName: developer.person.lastName,
+        email: developer.person.email,
+        phone: developer.person.phone,
+        status: developer.person.status.toLowerCase(),
       })),
       comments: project.comments.map((comment) => ({
         id: comment.id,

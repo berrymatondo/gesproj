@@ -35,6 +35,7 @@ export interface Project {
   updatedAt: string;
   referencePersons: Person[];
   analysts: Person[];
+  developers: Person[]; // Ajouter cette ligne
   comments: ProjectComment[];
   lastComment?: ProjectComment;
 }
@@ -50,8 +51,17 @@ export interface CreateProjectData {
   status: ProjectStatus;
   referencePersonIds: string[];
   analystIds: string[];
+  developerIds: string[]; // Ajouter cette ligne
 }
 
 export interface UpdateProjectData extends CreateProjectData {
   deleted?: boolean;
+}
+
+export interface ProjectPersonDeveloper {
+  id: string;
+  projectId: string;
+  personId: string;
+  project: Project;
+  person: Person;
 }

@@ -35,6 +35,7 @@ model Person {
   projectsAsOwner     ProjectPersonOwner[]
   projectsAsReference ProjectPersonReference[]
   projectsAsAnalyst   ProjectPersonAnalyst[]
+  projectsAsDeveloper ProjectPersonDeveloper[] // Ajouter cette ligne
 
   @@map("persons")
 }
@@ -57,6 +58,7 @@ model Project {
   owners           ProjectPersonOwner[]
   referencePersons ProjectPersonReference[]
   analysts         ProjectPersonAnalyst[]
+  developers       ProjectPersonDeveloper[] // Ajouter cette ligne
   comments         ProjectComment[]
 
   @@map("projects")
@@ -97,6 +99,18 @@ model ProjectPersonAnalyst {
 
   @@unique([projectId, personId])
   @@map("project_person_analysts")
+}
+
+model ProjectPersonDeveloper {
+  id        String @id @default(cuid())
+  projectId String @map("project_id")
+  personId  String @map("person_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  person  Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, personId])
+  @@map("project_person_developers")
 }
 
 model ProjectComment {

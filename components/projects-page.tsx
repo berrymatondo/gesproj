@@ -50,6 +50,8 @@ import {
   User,
   Mail,
   Phone,
+  Code,
+  BarChart3,
 } from "lucide-react";
 import { ProjectForm } from "./project-form";
 import { MobileHeader } from "./mobile-header";
@@ -59,6 +61,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import * as XLSX from "xlsx";
 import Link from "next/link";
 import type { Person } from "@/types/person";
+import { ProjectDetailsDialog } from "./project-details-dialog";
 
 export function ProjectsPage() {
   const {
@@ -87,6 +90,10 @@ export function ProjectsPage() {
 
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [personDialogOpen, setPersonDialogOpen] = useState(false);
+
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedProjectForDetails, setSelectedProjectForDetails] =
+    useState<Project | null>(null);
 
   const openPersonDialog = (person: Person) => {
     setSelectedPerson(person);
@@ -153,6 +160,12 @@ export function ProjectsPage() {
       "Porteurs de projet": project.owners
         .map((o) => `${o.firstName} ${o.lastName}`)
         .join(", "),
+      Analystes: project.analysts
+        .map((a) => `${a.firstName} ${a.lastName}`)
+        .join(", "), // Nouvelle colonne
+      Développeurs: project.developers
+        .map((d) => `${d.firstName} ${d.lastName}`)
+        .join(", "), // Nouvelle colonne
       "Date de début": new Date(project.startDate).toLocaleDateString("fr-FR"),
       "Date de fin": new Date(project.endDate).toLocaleDateString("fr-FR"),
       Priorité: "★".repeat(project.priority) + "☆".repeat(5 - project.priority),
@@ -242,6 +255,11 @@ export function ProjectsPage() {
         }`}
       />
     ));
+  };
+
+  const openDetailsDialog = (project: Project) => {
+    setSelectedProjectForDetails(project);
+    setDetailsDialogOpen(true);
   };
 
   return (
@@ -382,6 +400,61 @@ export function ProjectsPage() {
                                   ))}
                                 </span>
                               </div>
+                              {(project.analysts.length > 0 ||
+                                project.developers.length > 0) && (
+                                <div className="text-sm text-gray-600 space-y-1 mt-2">
+                                  {project.analysts.length > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                      <BarChart3 className="h-4 w-4" />
+                                      <span>
+                                        Analystes:{" "}
+                                        {project.analysts.map(
+                                          (analyst, index) => (
+                                            <button
+                                              key={analyst.id}
+                                              onClick={() =>
+                                                openPersonDialog(analyst)
+                                              }
+                                              className="text-blue-600 hover:underline"
+                                            >
+                                              {analyst.firstName}{" "}
+                                              {analyst.lastName}
+                                              {index <
+                                                project.analysts.length - 1 &&
+                                                ", "}
+                                            </button>
+                                          )
+                                        )}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {project.developers.length > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                      <Code className="h-4 w-4" />
+                                      <span>
+                                        Développeurs:{" "}
+                                        {project.developers.map(
+                                          (developer, index) => (
+                                            <button
+                                              key={developer.id}
+                                              onClick={() =>
+                                                openPersonDialog(developer)
+                                              }
+                                              className="text-blue-600 hover:underline"
+                                            >
+                                              {developer.firstName}{" "}
+                                              {developer.lastName}
+                                              {index <
+                                                project.developers.length - 1 &&
+                                                ", "}
+                                            </button>
+                                          )
+                                        )}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4" />
                                 <span>
@@ -417,7 +490,7 @@ export function ProjectsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => console.log("Voir", project.id)}
+                                onClick={() => openDetailsDialog(project)}
                               >
                                 <Eye className="h-4 w-4 mr-2" />
                                 Voir
@@ -483,6 +556,10 @@ export function ProjectsPage() {
                       <TableRow>
                         <TableHead>Projet</TableHead>
                         <TableHead>Porteurs</TableHead>
+                        <TableHead>Analystes</TableHead>{" "}
+                        {/* Nouvelle colonne */}
+                        <TableHead>Développeurs</TableHead>{" "}
+                        {/* Nouvelle colonne */}
                         <TableHead>Dates</TableHead>
                         <TableHead>Priorité</TableHead>
                         <TableHead>Statut</TableHead>
@@ -527,6 +604,44 @@ export function ProjectsPage() {
                                   {owner.firstName} {owner.lastName}
                                 </button>
                               ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {project.analysts.length > 0 ? (
+                                project.analysts.map((analyst) => (
+                                  <button
+                                    key={analyst.id}
+                                    onClick={() => openPersonDialog(analyst)}
+                                    className="block text-blue-600 hover:underline text-sm"
+                                  >
+                                    {analyst.firstName} {analyst.lastName}
+                                  </button>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 text-sm">
+                                  Aucun
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {project.developers.length > 0 ? (
+                                project.developers.map((developer) => (
+                                  <button
+                                    key={developer.id}
+                                    onClick={() => openPersonDialog(developer)}
+                                    className="block text-blue-600 hover:underline text-sm"
+                                  >
+                                    {developer.firstName} {developer.lastName}
+                                  </button>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 text-sm">
+                                  Aucun
+                                </span>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell>
@@ -581,9 +696,7 @@ export function ProjectsPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={() =>
-                                    console.log("Voir", project.id)
-                                  }
+                                  onClick={() => openDetailsDialog(project)}
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
                                   Voir
@@ -798,6 +911,13 @@ export function ProjectsPage() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Project Details Dialog */}
+      <ProjectDetailsDialog
+        project={selectedProjectForDetails}
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        onPersonClick={openPersonDialog}
+      />
     </div>
   );
 }

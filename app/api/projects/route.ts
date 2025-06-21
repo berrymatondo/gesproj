@@ -20,6 +20,7 @@ const createProjectSchema = z.object({
   status: z.enum(["NEW", "IN_PROGRESS", "DELIVERED"]).optional().default("NEW"),
   referencePersonIds: z.array(z.string()).optional().default([]),
   analystIds: z.array(z.string()).optional().default([]),
+  developerIds: z.array(z.string()).optional().default([]), // Ajouter cette ligne
 });
 
 const querySchema = z.object({
@@ -85,6 +86,12 @@ export async function GET(request: NextRequest) {
             person: true,
           },
         },
+        developers: {
+          // Ajouter cette section
+          include: {
+            person: true,
+          },
+        },
         comments: {
           orderBy: {
             createdAt: "desc",
@@ -131,6 +138,15 @@ export async function GET(request: NextRequest) {
         phone: analyst.person.phone,
         status: analyst.person.status.toLowerCase(),
       })),
+      developers: project.developers.map((developer) => ({
+        // Ajouter cette section
+        id: developer.person.id,
+        firstName: developer.person.firstName,
+        lastName: developer.person.lastName,
+        email: developer.person.email,
+        phone: developer.person.phone,
+        status: developer.person.status.toLowerCase(),
+      })),
       comments: project.comments.map((comment) => ({
         id: comment.id,
         content: comment.content,
@@ -172,6 +188,7 @@ export async function POST(request: NextRequest) {
       status,
       referencePersonIds,
       analystIds,
+      developerIds,
     } = createProjectSchema.parse(body);
 
     // Validation des dates
@@ -208,6 +225,12 @@ export async function POST(request: NextRequest) {
             personId,
           })),
         },
+        developers: {
+          // Ajouter cette section
+          create: developerIds.map((personId) => ({
+            personId,
+          })),
+        },
       },
       include: {
         owners: {
@@ -221,6 +244,12 @@ export async function POST(request: NextRequest) {
           },
         },
         analysts: {
+          include: {
+            person: true,
+          },
+        },
+        developers: {
+          // Ajouter cette section
           include: {
             person: true,
           },
@@ -260,6 +289,12 @@ export async function POST(request: NextRequest) {
         firstName: analyst.person.firstName,
         lastName: analyst.person.lastName,
         email: analyst.person.email,
+      })),
+      developers: project.developers.map((developer) => ({
+        id: developer.person.id,
+        firstName: developer.person.firstName,
+        lastName: developer.person.lastName,
+        email: developer.person.email,
       })),
       comments: [],
     };

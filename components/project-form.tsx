@@ -41,6 +41,7 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
 
   // Mettre à jour le formulaire pour supporter plusieurs porteurs
   const [ownerIds, setOwnerIds] = useState<string[]>([]);
+  const [developerIds, setDeveloperIds] = useState<string[]>([]);
 
   useEffect(() => {
     // Charger la liste des personnes
@@ -72,6 +73,7 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
       setStatus(project.status);
       setReferencePersonIds(project.referencePersons.map((p) => p.id));
       setAnalystIds(project.analysts.map((p) => p.id));
+      setDeveloperIds(project.developers.map((p) => p.id)); // Ajouter cette ligne
     } else {
       setName("");
       setDescription("");
@@ -84,6 +86,7 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
       setStatus("new");
       setReferencePersonIds([]);
       setAnalystIds([]);
+      setDeveloperIds([]); // Ajouter cette ligne
     }
     setError(null);
   }, [project]);
@@ -108,6 +111,7 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
         status: status.toUpperCase(),
         referencePersonIds,
         analystIds,
+        developerIds, // Ajouter cette ligne
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
@@ -283,6 +287,64 @@ export function ProjectForm({ project, onSubmit, onCancel }: ProjectFormProps) {
             disabled={isSubmitting}
             className="h-12 text-base"
           />
+        </div>
+
+        {/* Ajouter après la section des analystes */}
+        <div className="space-y-2">
+          <Label className="text-base font-medium">Développeurs</Label>
+          <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+            {persons.map((person) => (
+              <div key={person.id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={`developer-${person.id}`}
+                  checked={developerIds.includes(person.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setDeveloperIds([...developerIds, person.id]);
+                    } else {
+                      setDeveloperIds(
+                        developerIds.filter((id) => id !== person.id)
+                      );
+                    }
+                  }}
+                  className="rounded"
+                />
+                <label htmlFor={`developer-${person.id}`} className="text-sm">
+                  {person.firstName} {person.lastName}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Ajouter après la section des développeurs */}
+        <div className="space-y-2">
+          <Label className="text-base font-medium">Analystes</Label>
+          <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+            {persons.map((person) => (
+              <div key={person.id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={`analyst-${person.id}`}
+                  checked={analystIds.includes(person.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setAnalystIds([...analystIds, person.id]);
+                    } else {
+                      setAnalystIds(
+                        analystIds.filter((id) => id !== person.id)
+                      );
+                    }
+                  }}
+                  className="rounded"
+                />
+                <label htmlFor={`analyst-${person.id}`} className="text-sm">
+                  {person.firstName} {person.lastName}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-2 pt-4">

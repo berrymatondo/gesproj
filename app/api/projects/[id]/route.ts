@@ -25,6 +25,7 @@ const updateProjectSchema = z.object({
   status: z.enum(["NEW", "IN_PROGRESS", "DELIVERED"]).optional(),
   referencePersonIds: z.array(z.string()).optional(),
   analystIds: z.array(z.string()).optional(),
+  developerIds: z.array(z.string()).optional(), // Ajouter cette ligne
   deleted: z.boolean().optional(),
 });
 
@@ -33,7 +34,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const project = await prisma.project.findUnique({
       where: { id },
@@ -50,6 +51,12 @@ export async function GET(
           },
         },
         analysts: {
+          include: {
+            person: true,
+          },
+        },
+        developers: {
+          // Ajouter cette section partout
           include: {
             person: true,
           },
@@ -98,6 +105,14 @@ export async function GET(
         lastName: analyst.person.lastName,
         email: analyst.person.email,
       })),
+      developers: project.developers.map((developer) => ({
+        id: developer.person.id,
+        firstName: developer.person.firstName,
+        lastName: developer.person.lastName,
+        email: developer.person.email,
+        phone: developer.person.phone,
+        status: developer.person.status.toLowerCase(),
+      })),
       comments: project.comments.map((comment) => ({
         id: comment.id,
         content: comment.content,
@@ -121,7 +136,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const updateData = updateProjectSchema.parse(body);
 
@@ -183,6 +198,12 @@ export async function PUT(
             person: true,
           },
         },
+        developers: {
+          // Ajouter cette section partout
+          include: {
+            person: true,
+          },
+        },
         comments: {
           orderBy: {
             createdAt: "desc",
@@ -235,6 +256,21 @@ export async function PUT(
       }
     }
 
+    // Ajouter après la gestion des analysts
+    if (updateData.developerIds !== undefined) {
+      await prisma.projectPersonDeveloper.deleteMany({
+        where: { projectId: id },
+      });
+      if (updateData.developerIds.length > 0) {
+        await prisma.projectPersonDeveloper.createMany({
+          data: updateData.developerIds.map((personId) => ({
+            projectId: id,
+            personId,
+          })),
+        });
+      }
+    }
+
     // Récupérer le projet mis à jour avec les nouvelles relations
     const updatedProject = await prisma.project.findUnique({
       where: { id },
@@ -251,6 +287,12 @@ export async function PUT(
           },
         },
         analysts: {
+          include: {
+            person: true,
+          },
+        },
+        developers: {
+          // Ajouter cette section partout
           include: {
             person: true,
           },
@@ -295,6 +337,14 @@ export async function PUT(
         lastName: analyst.person.lastName,
         email: analyst.person.email,
       })),
+      developers: updatedProject!.developers.map((developer) => ({
+        id: developer.person.id,
+        firstName: developer.person.firstName,
+        lastName: developer.person.lastName,
+        email: developer.person.email,
+        phone: developer.person.phone,
+        status: developer.person.status.toLowerCase(),
+      })),
       comments: updatedProject!.comments.map((comment) => ({
         id: comment.id,
         content: comment.content,
@@ -325,7 +375,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const existingProject = await prisma.project.findUnique({
       where: { id },
@@ -345,6 +395,12 @@ export async function DELETE(
           },
         },
         analysts: {
+          include: {
+            person: true,
+          },
+        },
+        developers: {
+          // Ajouter cette section partout
           include: {
             person: true,
           },
@@ -394,6 +450,14 @@ export async function DELETE(
         firstName: analyst.person.firstName,
         lastName: analyst.person.lastName,
         email: analyst.person.email,
+      })),
+      developers: project.developers.map((developer) => ({
+        id: developer.person.id,
+        firstName: developer.person.firstName,
+        lastName: developer.person.lastName,
+        email: developer.person.email,
+        phone: developer.person.phone,
+        status: developer.person.status.toLowerCase(),
       })),
       comments: project.comments.map((comment) => ({
         id: comment.id,
