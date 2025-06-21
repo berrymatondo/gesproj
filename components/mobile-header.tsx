@@ -26,9 +26,11 @@ export function MobileHeader({ onExportExcel }: MobileHeaderProps) {
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">ONE</span>
+            <span className="text-white font-bold text-sm">DSI</span>
           </div>
-          <span className="text-xl font-semibold text-blue-600">OFFICE</span>
+          <span className="text-xl font-semibold text-blue-600">
+            Suivi de projets
+          </span>
         </div>
 
         {/* Desktop Navigation */}
